@@ -3,8 +3,10 @@
 #include <cstdlib>
 #include <ctime>
 #include <cstring>
+#include <chrono> // include chrono library
 
 using namespace std;
+using namespace std::chrono; // using chrono library
 
 void quicksort(int *Array, int left, int right) {
     if (left < right) {
@@ -59,8 +61,16 @@ int main() {
 
     inFile.close(); // close input file stream
 
+    // time the execution of the sequential code
+    auto start_time = high_resolution_clock::now(); // get start time
     // sort numbers in ascending order
     quicksort(Array, 0, N - 1);
+    auto end_time = high_resolution_clock::now(); // get end time
+
+    // calculate the duration of the sequential code
+    auto duration = duration_cast<microseconds>(end_time - start_time);
+
+    cout << "Execution time of sequential code: " << duration.count() << " microseconds" << endl;
 
     // write sorted numbers to file
     ofstream sortedFile("sorted_numbers.csv"); // create output file stream
