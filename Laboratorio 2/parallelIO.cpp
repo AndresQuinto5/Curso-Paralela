@@ -4,6 +4,7 @@
 #include <ctime>
 #include <cstring>
 #include <chrono> // include chrono library
+#include <omp.h> // include OpenMP library
 
 using namespace std;
 using namespace std::chrono; // using chrono library
@@ -25,7 +26,9 @@ void quicksort(int *Array, int left, int right) {
             }
             swap(Array[i], Array[j]);
         }
+        #pragma omp task
         quicksort(Array, left, j);
+        #pragma omp task
         quicksort(Array, j + 1, right);
     }
 }
@@ -61,16 +64,25 @@ int main() {
 
     inFile.close(); // close input file stream
 
-    // time the execution of the sequential code
+    // time the execution of the parallel code
     auto start_time = high_resolution_clock::now(); // get start time
-    // sort numbers in ascending order
-    quicksort(Array, 0, N - 1);
+    
+    #pragma omp parallel
+    {
+        int num_threads = omp_get_num_threads(); // get number of threads
+        #pragma omp single
+        {
+            cout << "Using " << num_threads << " threads" << endl; // print number of threads
+        }
+        #pragma omp single nowait
+        quicksort(Array, 0, N - 1);
+    }
     auto end_time = high_resolution_clock::now(); // get end time
 
-    // calculate the duration of the sequential code
+    // calculate the duration of the parallel code
     auto duration = duration_cast<microseconds>(end_time - start_time);
 
-    cout << "Execution time of sequential code: " << duration.count() << " microseconds" << endl;
+    cout << "Execution time of parallel code: " << duration.count() << " microseconds" << endl;
 
     // write sorted numbers to file
     ofstream sortedFile("sorted_numbers.csv"); // create output file stream
